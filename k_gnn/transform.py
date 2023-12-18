@@ -84,6 +84,26 @@ class ConnectedThreeMalkin(object):
     def __repr__(self):
         return '{}()'.format(self.__class__.__name__)
 
+class TwoGlobal(object):
+    def __call__(self, data):
+        out = graph_cpu.two_global(data.edge_index, data.x,
+                                               data.num_nodes)
+        data.edge_index_2, data.assignment_index_2, data.iso_type_2 = out
+        return data
+
+    def __repr__(self):
+        return '{}()'.format(self.__class__.__name__)
+
+class ThreeGlobal(object):
+    def __call__(self, data):
+        out = graph_cpu.three_global(data.edge_index, data.x,
+                                               data.num_nodes)
+        data.edge_index_3, data.assignment_index_3, data.iso_type_3 = out
+        return data
+
+    def __repr__(self):
+        return '{}()'.format(self.__class__.__name__)
+
 
 class Assignment2To3(object):
     def __call__(self, data):
@@ -93,3 +113,4 @@ class Assignment2To3(object):
 
     def __repr__(self):
         return '{}()'.format(self.__class__.__name__)
+

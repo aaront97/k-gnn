@@ -76,6 +76,30 @@ template <> struct Connect<2> {
     auto index = torch::stack({from_vector(rows), from_vector(cols)}, 0);
     return coalesce(remove_self_loops(index), (int64_t)set_to_id.size());
   }
+
+  static Tensor global(Tensor row, Tensor col, int64_t num_nodes,
+                       map<vector<int64_t>, int64_t> set_to_id) {
+      vector<int64_t> rows, cols;
+
+      for (auto item : set_to_id) {
+          ITERATE_NODES(0, x, num_nodes, {
+              vector<int64_t> set = {item.first[0], x};
+              ADD_SET(item.second, set);
+          });
+
+          ITERATE_NODES(0, x, num_nodes, {
+              vector<int64_t> set = {item.first[1], x};
+              ADD_SET(item.second, set);
+          });
+      }
+
+      if (rows.size() == 0) {
+          return torch::empty(0, row.options());
+      }
+
+      auto index = torch::stack({from_vector(rows), from_vector(cols)}, 0);
+      return coalesce(remove_self_loops(index), (int64_t)set_to_id.size());
+  }
 };
 
 template <> struct Connect<3> {
@@ -150,4 +174,34 @@ template <> struct Connect<3> {
     auto index = torch::stack({from_vector(rows), from_vector(cols)}, 0);
     return coalesce(remove_self_loops(index), (int64_t)set_to_id.size());
   }
+
+  static Tensor global(Tensor row, Tensor col, int64_t num_nodes,
+                         map<vector<int64_t>, int64_t> set_to_id) {
+        vector<int64_t> rows, cols;
+
+        for (auto item : set_to_id) {
+            ITERATE_NODES(0, x, num_nodes, {
+                vector<int64_t> set = {item.first[0], item.first[1], x};
+                ADD_SET(item.second, set);
+            });
+
+            ITERATE_NODES(0, x, num_nodes, {
+                vector<int64_t> set = {item.first[1], item.first[2], x};
+                ADD_SET(item.second, set);
+            });
+
+            ITERATE_NODES(0, x, num_nodes, {
+                vector<int64_t> set = {item.first[0], item.first[2], x};
+                ADD_SET(item.second, set);
+            });
+
+        }
+
+        if (rows.size() == 0) {
+            return torch::empty(0, row.options());
+        }
+
+        auto index = torch::stack({from_vector(rows), from_vector(cols)}, 0);
+        return coalesce(remove_self_loops(index), (int64_t)set_to_id.size());
+    }
 };

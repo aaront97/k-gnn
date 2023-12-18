@@ -45,6 +45,18 @@ vector<Tensor> malkin(Tensor index, Tensor x, int64_t num_nodes) {
 }
 
 template <int64_t K>
+vector<Tensor> global(Tensor index, Tensor x, int64_t num_nodes) {
+    Tensor row, col;
+    tie(row, col) = to_csr(index, num_nodes);
+    Tensor assignment, iso_type;
+    map<vector<int64_t>, int64_t> set_to_id;
+    tie(set_to_id, iso_type) = Assignment<K>::unconnected(row, col, x, num_nodes);
+    index = Connect<K>::global(row, col, num_nodes, set_to_id);
+    assignment = MapToTensor<K>::get(set_to_id);
+    return {index, assignment, iso_type};
+}
+
+template <int64_t K>
 vector<Tensor> connected_malkin(Tensor index, Tensor x, int64_t num_nodes) {
   Tensor row, col;
   tie(row, col) = to_csr(index, num_nodes);
@@ -95,4 +107,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("three_malkin", &malkin<3>, "3-Malkin");
   m.def("connected_three_malkin", &connected_malkin<3>, "Connected 3-Malkin");
   m.def("assignment_2to3", &assignment_2to3, "Assignment Two To Three Graph");
+  m.def("two_global", &global<2>, "2-Global");
+  m.def("three_global", &global<3>, "3-Global");
 }

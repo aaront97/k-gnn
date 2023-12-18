@@ -7,3 +7,6 @@ data/
 *.egg-info/
 .coverage
 *.so
+.idea/
+.vs/
+cmake-build-debug/
